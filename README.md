@@ -25,6 +25,16 @@ go get -u github.com/0x1EE7/cloudns
 ## Usage
 
 ```text
+$ cloudns add -i `curl -s https://ipinfo.io/ip` --ip 1.2.3.4 -d for.bar.tld
+Adding IPs [8.8.8.8 1.2.3.4] to for.bar.tld
+
+$cloudns remove --ip 1.2.3.4 -d for.bar.tld
+Removing IPs [1.2.3.4] from for.bar.tld
+```
+
+### Help
+```text
+$ cloudns
 Easily modify DNS records in Google Cloud DNS
 
 cloudns is a CLI to add and remove DNS entries.
@@ -44,7 +54,3 @@ Flags:
 Use "cloudns [command] --help" for more information about a command.
 ```
 
-```text
-$ cloudns add -i `curl -s https://ipinfo.io/ip` -d for.bar.tld
-Adding IPs [8.8.8.8] to for.bar.tld
-```
