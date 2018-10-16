@@ -23,7 +23,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -32,11 +31,6 @@ import (
 )
 
 var cfgFile string
-
-type DNSRecord struct {
-	ips    *[]net.IP
-	domain *string
-}
 
 func strJson(o interface{}) string {
 	s, _ := json.MarshalIndent(o, "", "  ")

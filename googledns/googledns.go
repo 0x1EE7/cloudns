@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
@@ -92,4 +93,118 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func NewDNSProvider() (*DNSProvider, error) {
 	saFile := viper.GetString("SA_FILE")
 	return NewDNSProviderServiceAccount(saFile)
+}
+
+type DNSRecord struct {
+	Ips    *[]net.IP
+	Domain *string
+}
+
+func MakeResourceRecordSet(domain string, ips []string, ttl int) []*dns.ResourceRecordSet {
+	rrec := &dns.ResourceRecordSet{
+		Name:    domain + ".",
+		Rrdatas: ips,
+		Ttl:     int64(ttl),
+		Type:    "A",
+	}
+
+	return []*dns.ResourceRecordSet{rrec}
+}
+
+func (d *DNSProvider) MakeChange(rec DNSRecord, adding bool) error {
+	zone := viper.GetString("DNS_ZONE")
+	newIPs := make([]string, len(*rec.Ips))
+	for i, v := range *rec.Ips {
+		newIPs[i] = v.String()
+	}
+	project := d.Config.Project
+
+	domain := *rec.Domain
+	oldIPs, err := d.GetResourceRecordSets(domain)
+	if err != nil {
+		return fmt.Errorf("Could not get resource sets for %v", domain)
+	}
+
+	change := &dns.Change{}
+	if adding {
+		// Adding records
+		newIPs = UniqueMerge(newIPs, oldIPs)
+		change.Additions = MakeResourceRecordSet(domain, newIPs, d.Config.TTL)
+		if len(oldIPs) > 0 {
+			change.Deletions = MakeResourceRecordSet(domain, oldIPs, d.Config.TTL)
+		}
+		fmt.Printf("Up to date records after changes: %v\n", newIPs)
+	} else {
+		// Deleteing records
+		change.Deletions = MakeResourceRecordSet(domain, oldIPs, d.Config.TTL)
+		remainingIPs := Diff(oldIPs, newIPs)
+		if len(remainingIPs) > 0 {
+			change.Additions = MakeResourceRecordSet(domain, remainingIPs, d.Config.TTL)
+		}
+		fmt.Printf("Up to date records after changes: %v\n", remainingIPs)
+	}
+
+	cli := d.Client
+	resp, err := cli.Changes.Create(project, zone, change).Do()
+	if err != nil {
+		return fmt.Errorf("googlecloud: %v", err)
+	}
+
+	for resp.Status == "pending" {
+		time.Sleep(time.Second)
+
+		resp, err = cli.Changes.Get(project, zone, resp.Id).Do()
+		if err != nil {
+			return fmt.Errorf("googlecloud: %v", err)
+		}
+	}
+
+	return nil
+
+}
+
+func (d *DNSProvider) GetResourceRecordSets(domain string) ([]string, error) {
+	project := d.Config.Project
+	zone := viper.GetString("DNS_ZONE")
+
+	resp, err := d.Client.ResourceRecordSets.List(project, zone).Name(domain + ".").Do()
+	if err != nil {
+		return []string{}, fmt.Errorf("googlecloud: %v", err)
+	}
+
+	if len(resp.Rrsets) == 1 {
+		return resp.Rrsets[0].Rrdatas, nil
+	} else {
+		return []string{}, nil
+	}
+}
+
+func UniqueMerge(s1 []string, s2 []string) []string {
+	merged := append([]string{}, s1...)
+	for _, s := range s2 {
+		if !Contains(merged, s) {
+			merged = append(merged, s)
+		}
+	}
+	return merged
+
+}
+
+func Diff(s1 []string, s2 []string) []string {
+	onlyInS1 := []string{}
+	for _, s := range s1 {
+		if !Contains(s2, s) {
+			onlyInS1 = append(onlyInS1, s)
+		}
+	}
+	return onlyInS1
+}
+
+func Contains(slice []string, s string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }

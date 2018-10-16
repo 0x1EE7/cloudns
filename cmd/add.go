@@ -23,10 +23,11 @@ package cmd
 import (
 	"fmt"
 
+	gdns "github.com/0x1EE7/cloudns/googledns"
 	"github.com/spf13/cobra"
 )
 
-var addFlags DNSRecord
+var addFlags gdns.DNSRecord
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
@@ -34,7 +35,14 @@ var addCmd = &cobra.Command{
 	Short: "Add given IPs to the domain",
 	// Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Adding IPs %v to %v\n", *addFlags.ips, *addFlags.domain)
+		fmt.Printf("Adding IPs %v to %v\n", *addFlags.Ips, *addFlags.Domain)
+		dns, err := gdns.NewDNSProvider()
+		if err == nil {
+			err = dns.MakeChange(addFlags, true)
+		}
+		if err != nil {
+			fmt.Println(err)
+		}
 	},
 }
 
@@ -44,6 +52,6 @@ func init() {
 	addCmd.MarkFlagRequired("ip")
 	domain := addCmd.Flags().StringP("domain", "d", "", "Domain address to remove")
 	addCmd.MarkFlagRequired("domain")
-	addFlags = DNSRecord{ips, domain}
+	addFlags = gdns.DNSRecord{Ips: ips, Domain: domain}
 
 }
