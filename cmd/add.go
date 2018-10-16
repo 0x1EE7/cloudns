@@ -34,7 +34,7 @@ var addCmd = &cobra.Command{
 	Short: "Add given IPs to the domain",
 	// Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Adding IPs %v to %v", *addFlags.ips, *addFlags.domain)
+		fmt.Printf("Adding IPs %v to %v\n", *addFlags.ips, *addFlags.domain)
 	},
 }
 

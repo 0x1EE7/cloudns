@@ -32,6 +32,18 @@ $cloudns remove --ip 1.2.3.4 -d for.bar.tld
 Removing IPs [1.2.3.4] from for.bar.tld
 ```
 
+### Config File & env
+`sa_file` can be configured in --config file
+```text
+$ cat ~/.cloudns.yaml
+sa_file: /path/to/google_cloud_sa_file.json
+```
+Can also be overriden by an env var
+```text
+$ SA_FILE=/path/to/anothet_sa.json cloudns
+```
+
+
 ### Help
 ```text
 $ cloudns

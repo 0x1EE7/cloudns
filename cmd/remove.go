@@ -34,7 +34,7 @@ var removeCmd = &cobra.Command{
 	Short: "Remove given IPs for the domain",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Removing IPs %v from %v", *removeFlags.ips, *removeFlags.domain)
+		fmt.Printf("Removing IPs %v from %v\n", *removeFlags.ips, *removeFlags.domain)
 	},
 }
 
