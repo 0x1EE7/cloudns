@@ -37,15 +37,15 @@ Up to date records after changes: []
 ```
 
 ### Config File & env
-`sa_file` can be configured in `--config` file
+`sa_file` & `dns_zone` can be configured in `--config` file
 ```yaml
 $ cat ~/.cloudns.yaml
 sa_file: /path/to/google_cloud_sa_file.json
 dns_zone: yourapp-zone-name
 ```
-Can also be overriden by an env var
+Values in config file can be overriden|set by an env var too
 ```shellsession
-$ SA_FILE=/path/to/anothet_sa.json cloudns
+$ SA_FILE=/path/to/another_sa.json cloudns
 ```
 
 
