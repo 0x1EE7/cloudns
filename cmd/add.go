@@ -40,7 +40,6 @@ var addCmd = &cobra.Command{
 		dns, err := gdns.NewDNSProvider()
 		if err == nil {
 			for i := 0; i < retryNum; i++ {
-				fmt.Println(i)
 				err = dns.MakeChange(addFlags, true)
 				if err != nil && err.Error() == RetryError {
 					fmt.Printf("Retrying %v", i)
