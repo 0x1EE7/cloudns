@@ -24,16 +24,33 @@ go get -u github.com/0x1EE7/cloudns
 
 ## Usage
 
-```text
-$ cloudns add -i `curl -s https://ipinfo.io/ip` --ip 1.2.3.4 -d for.bar.tld
-Adding IPs [8.8.8.8 1.2.3.4] to for.bar.tld
+```shellsession
+$ cloudns add -i `curl -s https://ipinfo.io/ip`  -d your.app.tld
+Using config file: ~/.cloudns.yaml
+Adding IPs [2.2.3.4] to your.app.tld
+Up to date records after changes: [2.2.3.4 1.2.3.4]
 
-$cloudns remove --ip 1.2.3.4 -d for.bar.tld
-Removing IPs [1.2.3.4] from for.bar.tld
+$ cloudns remove -i 1.2.3.4 -i 2.2.3.4 -d your.app.tld
+Using config file: ~/.cloudns.yaml
+Removing IPs [1.2.3.4 2.2.3.4] from your.app.tld
+Up to date records after changes: []
 ```
 
+### Config File & env
+`sa_file` can be configured in `--config` file
+```yaml
+$ cat ~/.cloudns.yaml
+sa_file: /path/to/google_cloud_sa_file.json
+dns_zone: yourapp-zone-name
+```
+Can also be overriden by an env var
+```shellsession
+$ SA_FILE=/path/to/anothet_sa.json cloudns
+```
+
+
 ### Help
-```text
+```shellsession
 $ cloudns
 Easily modify DNS records in Google Cloud DNS
 
