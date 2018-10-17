@@ -38,7 +38,12 @@ var removeCmd = &cobra.Command{
 		fmt.Printf("Removing IPs %v from %v\n", *removeFlags.Ips, *removeFlags.Domain)
 		dns, err := gdns.NewDNSProvider()
 		if err == nil {
-			err = dns.MakeChange(removeFlags, false)
+			for i := 0; i < retryNum; i++ {
+				err = dns.MakeChange(removeFlags, false)
+				if !RetryOn(err) {
+					break
+				}
+			}
 		}
 		if err != nil {
 			fmt.Println(err)

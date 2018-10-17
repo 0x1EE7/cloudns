@@ -24,6 +24,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -31,6 +33,9 @@ import (
 )
 
 var cfgFile string
+var retryNum int
+
+const RetryError = "googlecloud: googleapi: Error 412: Precondition not met for 'entity.change.deletions[0]', conditionNotMet"
 
 func strJson(o interface{}) string {
 	s, _ := json.MarshalIndent(o, "", "  ")
@@ -66,6 +71,8 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cloudns.yaml)")
 
+	rootCmd.PersistentFlags().IntVarP(&retryNum, "retry", "r", 1, "number of retries when multiple instances are concurrently trying to modify the same domain name ")
+
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -95,5 +102,16 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+// RetryOn mitigates specific errors
+func RetryOn(err error) bool {
+	if err != nil && (err.Error() == RetryError || strings.HasSuffix(err.Error(), "alreadyExists")) {
+		fmt.Println("Retrying...")
+		time.Sleep(2 * time.Second)
+		return true
+	} else {
+		return false
 	}
 }

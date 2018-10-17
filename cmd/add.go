@@ -38,7 +38,12 @@ var addCmd = &cobra.Command{
 		fmt.Printf("Adding IPs %v to %v\n", *addFlags.Ips, *addFlags.Domain)
 		dns, err := gdns.NewDNSProvider()
 		if err == nil {
-			err = dns.MakeChange(addFlags, true)
+			for i := 0; i < retryNum; i++ {
+				err = dns.MakeChange(addFlags, true)
+				if !RetryOn(err) {
+					break
+				}
+			}
 		}
 		if err != nil {
 			fmt.Println(err)
