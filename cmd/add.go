@@ -22,7 +22,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
 
 	gdns "github.com/0x1EE7/cloudns/googledns"
 	"github.com/spf13/cobra"
@@ -41,10 +40,7 @@ var addCmd = &cobra.Command{
 		if err == nil {
 			for i := 0; i < retryNum; i++ {
 				err = dns.MakeChange(addFlags, true)
-				if err != nil && err.Error() == RetryError {
-					fmt.Printf("Retrying %v", i)
-					time.Sleep(2 * time.Second)
-				} else {
+				if !RetryOn(err) {
 					break
 				}
 			}

@@ -24,6 +24,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -100,5 +102,16 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+// RetryOn mitigates specific errors
+func RetryOn(err error) bool {
+	if err != nil && (err.Error() == RetryError || strings.HasSuffix(err.Error(), "alreadyExists")) {
+		fmt.Println("Retrying...")
+		time.Sleep(2 * time.Second)
+		return true
+	} else {
+		return false
 	}
 }
