@@ -29,7 +29,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                120,
+		TTL:                300,
 		PropagationTimeout: 180 * time.Second,
 		PollingInterval:    5 * time.Second,
 	}
@@ -135,7 +135,7 @@ func (d *DNSProvider) MakeChange(rec DNSRecord, adding bool) error {
 		}
 		fmt.Printf("Up to date records after changes: %v\n", newIPs)
 	} else {
-		// Deleteing records
+		// Deleting records
 		change.Deletions = MakeResourceRecordSet(domain, oldIPs, d.Config.TTL)
 		remainingIPs := Diff(oldIPs, newIPs)
 		if len(remainingIPs) > 0 {
@@ -167,7 +167,7 @@ func (d *DNSProvider) GetResourceRecordSets(domain string) ([]string, error) {
 	project := d.Config.Project
 	zone := viper.GetString("DNS_ZONE")
 
-	resp, err := d.Client.ResourceRecordSets.List(project, zone).Name(domain + ".").Do()
+	resp, err := d.Client.ResourceRecordSets.List(project, zone).Name(domain + ".").Type("A").Do()
 	if err != nil {
 		return []string{}, fmt.Errorf("googlecloud: %v", err)
 	}
