@@ -67,6 +67,7 @@ Available Commands:
 Flags:
       --config string   config file (default is $HOME/.cloudns.yaml)
   -h, --help            help for cloudns
+  -r, --retry int       number of retries when multiple instances are concurrently trying to modify the same domain name  (default 1)
 
 Use "cloudns [command] --help" for more information about a command.
 ```
