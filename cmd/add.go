@@ -22,6 +22,7 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	gdns "github.com/0x1EE7/cloudns/googledns"
 	"github.com/spf13/cobra"
@@ -38,7 +39,16 @@ var addCmd = &cobra.Command{
 		fmt.Printf("Adding IPs %v to %v\n", *addFlags.Ips, *addFlags.Domain)
 		dns, err := gdns.NewDNSProvider()
 		if err == nil {
-			err = dns.MakeChange(addFlags, true)
+			for i := 0; i < retryNum; i++ {
+				fmt.Println(i)
+				err = dns.MakeChange(addFlags, true)
+				if err != nil && err.Error() == RetryError {
+					fmt.Printf("Retrying %v", i)
+					time.Sleep(2 * time.Second)
+				} else {
+					break
+				}
+			}
 		}
 		if err != nil {
 			fmt.Println(err)

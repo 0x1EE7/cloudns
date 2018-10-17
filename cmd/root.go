@@ -31,6 +31,9 @@ import (
 )
 
 var cfgFile string
+var retryNum int
+
+const RetryError = "googlecloud: googleapi: Error 412: Precondition not met for 'entity.change.deletions[0]', conditionNotMet"
 
 func strJson(o interface{}) string {
 	s, _ := json.MarshalIndent(o, "", "  ")
@@ -65,6 +68,8 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cloudns.yaml)")
+
+	rootCmd.PersistentFlags().IntVarP(&retryNum, "retry", "r", 1, "number of retries when multiple instances are concurrently trying to modify the same domain name ")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
